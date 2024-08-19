@@ -7,7 +7,7 @@ import openai
 
 app = FastAPI()
 
-api_key = "2447d931642844d38c63f5918e032ac6"
+api_key = "Your_api_key"
 base_url = "https://api.aimlapi.com"
 
 openai.api_key = api_key
