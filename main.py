@@ -202,20 +202,3 @@ async def summarize(request: SummaryRequest):
 
     return {"summary": summary}
 
-
-# url = "https://www.dawn.com/news/1852663/remarkable-achievement-coas-munir-lauds-arshad-nadeem-for-olympic-win"
-# text, author, surl = fetch_article_text(url)
-# # print(surl)
-# title  = "Some India doctors stay off job after strike over colleague’s rape and murder"
-# text, author, surl = fetch_article_by_title(title)
-# print(text)
-<<<<<<< HEAD
-# import asyncio
-
-# async def main():
-#     audio_url = await generate_audio("hello my name is Umar", "en")
-#     print(audio_url)
-
-# asyncio.run(main())
-=======
->>>>>>> caa1156243082e486a30dccd466acda53485a262
