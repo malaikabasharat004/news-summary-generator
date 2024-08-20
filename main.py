@@ -12,7 +12,7 @@ from starlette.responses import StreamingResponse
 
 app = FastAPI()
 
-api_key = "2447d931642844d38c63f5918e032ac6"
+api_key = "Your_api_key"
 base_url = "https://api.aimlapi.com"
 
 openai.api_key = api_key
@@ -209,6 +209,7 @@ async def summarize(request: SummaryRequest):
 # title  = "Some India doctors stay off job after strike over colleague’s rape and murder"
 # text, author, surl = fetch_article_by_title(title)
 # print(text)
+<<<<<<< HEAD
 # import asyncio
 
 # async def main():
@@ -216,3 +217,5 @@ async def summarize(request: SummaryRequest):
 #     print(audio_url)
 
 # asyncio.run(main())
+=======
+>>>>>>> caa1156243082e486a30dccd466acda53485a262
