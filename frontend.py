@@ -6,6 +6,9 @@ st.set_page_config(layout="wide")
 
 API_URL = "http://127.0.0.1:8000"
 
+# Define language map
+language_map = {"English": "en", "Urdu": "ur", "Spanish": "es", "French": "fr"}
+
 # Apply custom CSS for styling
 st.markdown("""
     <style>
@@ -20,22 +23,16 @@ st.markdown("""
         background-color: #f5f5f5;
     }
     .content {
-        padding: 2em;
+        text-align: justify; /* Justify text alignment */
     }
     .header {
         font-size: 2em;
         color: #0073e6;
     }
-    .button-primary {
-        background-color: #0073e6;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        font-size: 1em;
-    }
-    .button-primary:hover {
-        background-color: #005bb5;
+    .button-container {
+        display: flex;
+        gap: 10px; /* Space between buttons */
+        margin-top: 5em; /* Space from the top */
     }
     </style>
 """, unsafe_allow_html=True)
@@ -43,11 +40,8 @@ st.markdown("""
 # Title with custom styling
 st.markdown('<div class="title">Personalized News Generator</div>', unsafe_allow_html=True)
 
-# Create two columns for layout
-col1, col2 = st.columns([0.8, 2])  # Adjust column width ratio as needed
-
-# Input Fields and Buttons on the left side
-with col1:
+# Sidebar for input fields and buttons
+with st.sidebar:
     # Dropdown for input method
     option = st.selectbox("How do you want to enter the news?", ("URL", "Title"))
 
@@ -61,68 +55,85 @@ with col1:
         title = st.text_input("Enter the news title:")
         url = None
 
-    # Use a custom class for buttons
     if st.button("Get Article", key="get_article", help="Fetch article based on URL or Title"):
         if url or title:
-            # Convert language to lowercase for backend compatibility if needed
-            language_map = {"English": "en", "Urdu": "ur", "Spanish": "es", "French": "fr"}
             response = requests.post(f"{API_URL}/article", json={"url": url, "title": title, "language": language_map.get(language, "en")})
             if response.status_code == 200:
                 data = response.json()
-                st.session_state.article_text = data["article_text"]
+                st.session_state.article_text = data.get("article_text", "")
                 st.session_state.authors = data.get("authors", [])
                 st.session_state.source_url = data.get("source_url", "")
                 st.session_state.summary = None
                 st.session_state.answers = []  # Clear previous answers
             else:
-                st.error("Failed to fetch article")
+                st.error(f"Failed to fetch article: {response.text}")
         else:
             st.error("Please enter a URL or title")
 
-    question = st.text_input("Ask a question about the article:")
+    question = st.text_input("Ask a question about the article:", key="question", label_visibility="collapsed", placeholder="Type your question here...")
     if st.button("Ask Question", key="ask_question", help="Ask a question about the fetched article"):
         if 'article_text' in st.session_state and question:
-            language_map = {"English": "en", "Urdu": "ur", "Spanish": "es", "French": "fr"}
             response = requests.post(f"{API_URL}/question", json={"question": question, "language": language_map.get(language, "en")})
             if response.status_code == 200:
-                answer = response.json()["answer"]
+                answer = response.json().get("answer", "No answer found.")
                 st.session_state.answers.append({"question": question, "answer": answer})
             else:
-                st.error("Failed to get an answer for the question")
+                st.error(f"Failed to get an answer for the question: {response.text}")
         else:
             st.error("Please enter a question or fetch an article first")
-
+    
+    st.markdown('<div class="button-container">', unsafe_allow_html=True)
+    # Button with specific class for alignment
     if st.button("Summarize Article", key="summarize_article", help="Summarize the fetched article"):
         if 'article_text' in st.session_state:
-            language_map = {"English": "en", "Urdu": "ur", "Spanish": "es", "French": "fr"}
             response = requests.post(f"{API_URL}/summarize", json={"max_words": 150, "language": language_map.get(language, "en")})
             if response.status_code == 200:
-                st.session_state.summary = response.json()["summary"]
+                st.session_state.summary = response.json().get("summary", "Summary not available.")
             else:
-                st.error("Failed to summarize the article")
+                st.error(f"Failed to summarize the article: {response.text}")
         else:
             st.error("No article text available for summarization")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Display Output (conditionally based on session state)
-with col2:
-    if 'article_text' in st.session_state:
+with st.container():
+    if 'article_text' in st.session_state and st.session_state.article_text:
         # Highlight the source and authors at the top
         if st.session_state.authors:
-            st.markdown(f"**Author(s):** *{', '.join(st.session_state.authors)}*", unsafe_allow_html=True)
+            st.markdown(f"<p><strong>Author(s):</strong> <em>{', '.join(st.session_state.authors)}</em></p>", unsafe_allow_html=True)
         if st.session_state.source_url:
-            st.markdown(f"**Source:** [Link to the article]({st.session_state.source_url})", unsafe_allow_html=True)
+            st.markdown(f"<p><strong>Source:</strong> <a href='{st.session_state.source_url}' target='_blank'>Link to the article</a></p>", unsafe_allow_html=True)
         
         st.markdown('<div class="header">Article</div>', unsafe_allow_html=True)
 
-        # Then display the article text
-        st.write(st.session_state.article_text)
+        # Display the article text with justification
+        st.markdown(f'<div class="content">{st.session_state.article_text}</div>', unsafe_allow_html=True)
+        
+        # Audio button for the article
+        if st.button("🔊 Listen", key="listen_article"):
+            response = requests.post(f"{API_URL}/article_audio")
+            if response.status_code == 200:
+                audio_data = response.content
+                st.audio(audio_data, format="audio/mp3")
+            else:
+                st.error(f"Failed to retrieve the article audio: {response.text}")
 
-    if 'summary' in st.session_state:
+    if 'summary' in st.session_state and st.session_state.summary:
         st.markdown('<div class="header">Summary</div>', unsafe_allow_html=True)
-        st.write(st.session_state.summary)
+        # Display the summary with justification
+        st.markdown(f'<div class="content">{st.session_state.summary}</div>', unsafe_allow_html=True)
 
-    if 'answers' in st.session_state:
-        st.markdown('<div class="header">Questions and Answers</div>', unsafe_allow_html=True)
+        # Audio button for the summary
+        if st.button("🔊 Listen", key="listen_summary"):
+            response = requests.post(f"{API_URL}/summary_audio")
+            if response.status_code == 200:
+                audio_data = response.content
+                st.audio(audio_data, format="audio/mp3")
+            else:
+                st.error(f"Failed to retrieve the summary audio: {response.text}")
+
+    if 'answers' in st.session_state and st.session_state.answers:
+        st.markdown('<div class="header">Q&A</div>', unsafe_allow_html=True)
         for qa in st.session_state.answers:
-            st.write(f"**Question:** {qa['question']}")
-            st.write(f"**Answer:** {qa['answer']}")
+            st.markdown(f"**Q: {qa['question']}**")
+            st.markdown(f"A: {qa['answer']}")
