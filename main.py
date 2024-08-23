@@ -61,6 +61,7 @@ async def translate_text(text, target_language):
         print(f"Error translating text: {e}")
         raise HTTPException(status_code=500, detail="Error translating text")
 
+
 async def fetch_article_by_title(title):
     api_key = "YOUR_GOOGLE_API_KEY"
     search_engine_id = "YOUR_CUSTOM_SEARCH_ENGINE_ID"
