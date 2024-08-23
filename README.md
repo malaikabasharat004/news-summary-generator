@@ -100,7 +100,7 @@ To run the Streamlit app:
 
 1. **Run the Streamlit app:**
     ```bash
-    streamlit run <script-name>.py
+    streamlit run app.py
     ```
 
 ### Notes
