@@ -81,7 +81,7 @@ To start the FastAPI backend:
 
 2. **Navigate to the project directory:**
     ```bash
-    cd <project-directory>
+    cd news-summary-generator
     ```
 
 3. **Install backend dependencies:**
