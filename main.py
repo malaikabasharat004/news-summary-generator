@@ -12,7 +12,7 @@ from starlette.responses import StreamingResponse
 
 app = FastAPI()
 
-api_key = "Your_api_key"
+api_key = "2447d931642844d38c63f5918e032ac6"
 base_url = "https://api.aimlapi.com"
 
 openai.api_key = api_key
@@ -61,29 +61,44 @@ async def translate_text(text, target_language):
         print(f"Error translating text: {e}")
         raise HTTPException(status_code=500, detail="Error translating text")
 
+        # # "AIzaSyBXcCdHXzgqCkEk_QufV62-0fVTfsFK7dI"
+        # YOUR_GOOGLE_API_KEY = "AIzaSyAUw7wqL8-2x9UCp_qAEOvtDZCvAjbCW0U"
+        # YOUR_CUSTOM_SEARCH_ENGINE_ID = "8380278bfbbb94fd5"
+
 async def fetch_article_by_title(title):
-    api_key = "f3fd25ac187a41599f9dce7e9ea0ffab"
-    search_url = f"https://newsapi.org/v2/everything?q={requests.utils.quote(title)}&apiKey={api_key}&language=en"
+    api_key = "AIzaSyAUw7wqL8-2x9UCp_qAEOvtDZCvAjbCW0U"
+    search_engine_id = "8380278bfbbb94fd5"
+    search_url = f"https://www.googleapis.com/customsearch/v1?q={requests.utils.quote(title)}&key={api_key}&cx={search_engine_id}"
     
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(search_url) as response:
                 response.raise_for_status()
-                articles = (await response.json()).get("articles", [])
-                
-                if not articles:
+                search_results = await response.json()
+
+                # # Debugging
+                # print("Search Results:", search_results)
+
+                if 'items' not in search_results or not search_results['items']:
+                    print("No articles found for the given title.")
                     return None, None, None
                 
-                first_article = articles[0]
-                article_text, authors, source_url = await fetch_article_text(first_article["url"])
+                first_result = search_results['items'][0]
+                article_url = first_result.get("link")
+                
+                # # Debugging
+                # print("First Article URL:", article_url)
+
+                article_text, authors, source_url = await fetch_article_text(article_url)
                 return article_text, authors, source_url
     
     except aiohttp.ClientError as e:
         print(f"Error fetching articles: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching articles from the news API")
+        raise HTTPException(status_code=500, detail="Error fetching articles from the search API")
     except Exception as e:
         print(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="Unexpected error occurred")
+
 
 def generate_audio(text: str, language: str) -> StreamingResponse:
     try:
@@ -202,3 +217,17 @@ async def summarize(request: SummaryRequest):
 
     return {"summary": summary}
 
+
+# url = "https://www.dawn.com/news/1852663/remarkable-achievement-coas-munir-lauds-arshad-nadeem-for-olympic-win"
+# text, author, surl = fetch_article_text(url)
+# # print(surl)
+# title  = "Some India doctors stay off job after strike over colleague’s rape and murder"
+# text, author, surl = fetch_article_by_title(title)
+# print(text)
+# import asyncio
+
+# async def main():
+#     audio_url = await generate_audio("hello my name is Umar", "en")
+#     print(audio_url)
+
+# asyncio.run(main())
