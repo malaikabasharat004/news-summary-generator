@@ -9,7 +9,7 @@ API_URL = "https://your-fastapi-backend-url.com"
 # Define language map
 language_map = {"English": "en", "Urdu": "ur", "Spanish": "es", "French": "fr"}
 
-# Apply custom CSS for styling
+# Apply custom CSS for stylinG
 st.markdown("""
     <style>
     .title {
